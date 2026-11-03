@@ -117,6 +117,7 @@ export default function AdminDashboardPage() {
 
   // Navigation tabs
   const [activeTab, setActiveTab] = useState<'explorer' | 'links' | 'storage'>('explorer');
+  const [mobileExplorerView, setMobileExplorerView] = useState<'files' | 'vault' | 'clients'>('files');
 
   // Workspaces state
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
@@ -400,35 +401,70 @@ export default function AdminDashboardPage() {
   return (
     <div className="min-h-screen flex flex-col bg-slate-950 text-slate-100 font-sans">
       {/* Top Navbar */}
-      <header className="px-4 md:px-6 py-3.5 bg-slate-900/90 border-b border-slate-800 flex flex-wrap items-center justify-between gap-3 sticky top-0 z-30 backdrop-blur-md">
-        <div className="flex items-center gap-3">
-          <div className="p-2 rounded-xl bg-blue-600/15 border border-blue-500/30 text-blue-400">
-            <Database size={22} />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-base font-bold text-slate-100">لوحة تحكم المسؤول (Admin Dashboard)</h1>
-              <span className="px-2 py-0.5 rounded-full bg-blue-600/20 text-blue-300 border border-blue-500/30 text-[10px] font-semibold">
-                Cloud Vault v1.0
-              </span>
+      <header className="px-3.5 sm:px-6 py-2.5 sm:py-3.5 bg-slate-900/95 border-b border-slate-800 sticky top-0 z-30 backdrop-blur-md">
+        <div className="flex items-center justify-between gap-2 max-w-7xl mx-auto">
+          {/* Logo & Title */}
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+            <div className="p-1.5 sm:p-2 rounded-xl bg-blue-600/15 border border-blue-500/30 text-blue-400 flex-shrink-0">
+              <Database size={18} className="sm:w-[22px] sm:h-[22px]" />
             </div>
-            <p className="text-xs text-slate-400">
-              إدارة مساحات الأعمال، الرفع المتداخل، والروابط المشفرة برمز PIN
-            </p>
+            <div className="min-w-0">
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <h1 className="text-sm sm:text-base font-bold text-slate-100 truncate">لوحة تحكم المسؤول</h1>
+                <span className="hidden sm:inline-flex px-2 py-0.5 rounded-full bg-blue-600/20 text-blue-300 border border-blue-500/30 text-[10px] font-semibold">
+                  v1.0
+                </span>
+              </div>
+              <p className="text-[11px] text-slate-400 hidden sm:block">
+                إدارة مساحات الأعمال، الرفع المتداخل، والروابط المشفرة برمز PIN
+              </p>
+            </div>
+          </div>
+
+          {/* Global Actions: New Workspace, Admin Profile, Logout */}
+          <div className="flex items-center gap-1.5 sm:gap-2.5 flex-shrink-0">
+            <button
+              onClick={() => setIsNewWorkspaceModalOpen(true)}
+              className="flex items-center gap-1 px-2.5 sm:px-3.5 py-1.5 sm:py-2 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-xl transition-colors shadow-sm"
+            >
+              <Plus size={14} />
+              <span>مساحة عمل</span>
+            </button>
+
+            {adminUser && (
+              <button
+                onClick={() => setIsProfileModalOpen(true)}
+                title="تعديل حساب المسؤول وكلمة المرور"
+                className="hidden md:flex items-center gap-2 px-3 py-1.5 bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700/60 rounded-xl text-xs transition-colors group cursor-pointer"
+              >
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span className="text-slate-300 group-hover:text-white font-medium">{adminUser.email}</span>
+                <KeyRound size={13} className="text-blue-400 group-hover:text-blue-300" />
+              </button>
+            )}
+
+            <button
+              onClick={handleLogout}
+              title="تسجيل الخروج من لوحة التحكم"
+              className="flex items-center gap-1 p-1.5 sm:px-3 sm:py-2 text-xs text-rose-400 hover:text-white hover:bg-rose-600/20 border border-rose-500/20 rounded-xl transition-colors"
+            >
+              <LogOut size={15} />
+              <span className="hidden sm:inline">خروج</span>
+            </button>
           </div>
         </div>
 
-        {/* Navigation Tabs */}
-        <div className="flex items-center gap-1.5 p-1 bg-slate-950 border border-slate-800 rounded-xl text-xs overflow-x-auto max-w-full">
+        {/* Navigation Tabs Bar */}
+        <div className="mt-2.5 pt-2 border-t border-slate-800/80 max-w-7xl mx-auto flex items-center gap-1 sm:gap-1.5 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           <button
             onClick={() => setActiveTab('explorer')}
-            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg transition-colors font-medium ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors flex-shrink-0 whitespace-nowrap ${
               activeTab === 'explorer'
                 ? 'bg-blue-600 text-white shadow-sm'
-                : 'text-slate-400 hover:text-white'
+                : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
             }`}
           >
-            <HardDrive size={14} />
+            <HardDrive size={13} />
             <span>متصفح الأقراص والملفات</span>
           </button>
 
@@ -437,13 +473,13 @@ export default function AdminDashboardPage() {
               setActiveTab('links');
               fetchShareLinks();
             }}
-            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg transition-colors font-medium ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors flex-shrink-0 whitespace-nowrap ${
               activeTab === 'links'
                 ? 'bg-blue-600 text-white shadow-sm'
-                : 'text-slate-400 hover:text-white'
+                : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
             }`}
           >
-            <Share2 size={14} />
+            <Share2 size={13} />
             <span>روابط المشاركة ({shareLinks.length})</span>
           </button>
 
@@ -452,107 +488,149 @@ export default function AdminDashboardPage() {
               setActiveTab('storage');
               fetchStorageStatus();
             }}
-            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg transition-colors font-medium ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors flex-shrink-0 whitespace-nowrap ${
               activeTab === 'storage'
                 ? 'bg-blue-600 text-white shadow-sm'
-                : 'text-slate-400 hover:text-white'
+                : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
             }`}
           >
-            <Cloud size={14} />
+            <Cloud size={13} />
             <span>حالة السحابة وقاعدة البيانات</span>
-          </button>
-        </div>
-
-        {/* Global Actions: New Workspace, Admin Profile, Logout */}
-        <div className="flex items-center gap-2.5">
-          <button
-            onClick={() => setIsNewWorkspaceModalOpen(true)}
-            className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-xl transition-colors shadow-sm"
-          >
-            <Plus size={15} />
-            <span>مساحة عمل جديدة</span>
-          </button>
-
-          {adminUser && (
-            <button
-              onClick={() => setIsProfileModalOpen(true)}
-              title="تعديل حساب المسؤول وكلمة المرور"
-              className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700/60 rounded-xl text-xs transition-colors group cursor-pointer"
-            >
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-              <span className="text-slate-300 group-hover:text-white font-medium">{adminUser.email}</span>
-              <KeyRound size={13} className="text-blue-400 group-hover:text-blue-300" />
-            </button>
-          )}
-
-          <button
-            onClick={handleLogout}
-            title="تسجيل الخروج من لوحة التحكم"
-            className="flex items-center gap-1.5 px-3 py-2 text-xs text-rose-400 hover:text-white hover:bg-rose-600/20 border border-rose-500/20 rounded-xl transition-colors"
-          >
-            <LogOut size={15} />
-            <span className="hidden sm:inline">خروج</span>
           </button>
         </div>
       </header>
 
       {/* Main Content Area */}
-      <main className="flex-1 p-3.5 sm:p-6 max-w-7xl w-full mx-auto flex flex-col gap-4 sm:gap-6">
+      <main className="flex-1 p-3 sm:p-6 max-w-7xl w-full mx-auto flex flex-col gap-3 sm:gap-6">
         {/* Top KPI Metrics Row */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
           {/* Workspaces Metric */}
-          <div className="p-4 rounded-2xl bg-slate-900/60 border border-slate-800 flex items-center justify-between">
-            <div>
-              <p className="text-xs text-slate-400">مساحات الأعمال (الأقراص)</p>
-              <h3 className="text-xl font-bold text-slate-100 mt-1">{totalWorkspaces} مساحات</h3>
+          <div className="p-2.5 sm:p-4 rounded-xl sm:rounded-2xl bg-slate-900/60 border border-slate-800 flex items-center justify-between">
+            <div className="min-w-0">
+              <p className="text-[10px] sm:text-xs text-slate-400 truncate">مساحات الأعمال (الأقراص)</p>
+              <h3 className="text-sm sm:text-xl font-bold text-slate-100 mt-0.5 sm:mt-1">{totalWorkspaces} مساحات</h3>
             </div>
-            <div className="p-3 rounded-xl bg-blue-500/10 text-blue-400 border border-blue-500/20">
-              <HardDrive size={22} />
+            <div className="p-2 sm:p-3 rounded-lg sm:rounded-xl bg-blue-500/10 text-blue-400 border border-blue-500/20 flex-shrink-0">
+              <HardDrive size={16} className="sm:w-[22px] sm:h-[22px]" />
             </div>
           </div>
 
           {/* Folders Metric */}
-          <div className="p-4 rounded-2xl bg-slate-900/60 border border-slate-800 flex items-center justify-between">
-            <div>
-              <p className="text-xs text-slate-400">المجلدات النشطة</p>
-              <h3 className="text-xl font-bold text-slate-100 mt-1">{totalFoldersCount} مجلد</h3>
+          <div className="p-2.5 sm:p-4 rounded-xl sm:rounded-2xl bg-slate-900/60 border border-slate-800 flex items-center justify-between">
+            <div className="min-w-0">
+              <p className="text-[10px] sm:text-xs text-slate-400 truncate">المجلدات النشطة</p>
+              <h3 className="text-sm sm:text-xl font-bold text-slate-100 mt-0.5 sm:mt-1">{totalFoldersCount} مجلد</h3>
             </div>
-            <div className="p-3 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20">
-              <Folder size={22} />
+            <div className="p-2 sm:p-3 rounded-lg sm:rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20 flex-shrink-0">
+              <Folder size={16} className="sm:w-[22px] sm:h-[22px]" />
             </div>
           </div>
 
           {/* Files & Storage Metric */}
-          <div className="p-4 rounded-2xl bg-slate-900/60 border border-slate-800 flex items-center justify-between">
-            <div>
-              <p className="text-xs text-slate-400">إجمالي الملفات والتخزين</p>
-              <h3 className="text-xl font-bold text-slate-100 mt-1">
-                {totalFilesCount} <span className="text-xs font-normal text-slate-400">({formatBytes(totalUsedStorageBytes)})</span>
+          <div className="p-2.5 sm:p-4 rounded-xl sm:rounded-2xl bg-slate-900/60 border border-slate-800 flex items-center justify-between">
+            <div className="min-w-0">
+              <p className="text-[10px] sm:text-xs text-slate-400 truncate">إجمالي الملفات والتخزين</p>
+              <h3 className="text-sm sm:text-xl font-bold text-slate-100 mt-0.5 sm:mt-1 truncate">
+                {totalFilesCount} <span className="text-[10px] sm:text-xs font-normal text-slate-400">({formatBytes(totalUsedStorageBytes)})</span>
               </h3>
             </div>
-            <div className="p-3 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-              <Layers size={22} />
+            <div className="p-2 sm:p-3 rounded-lg sm:rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex-shrink-0">
+              <Layers size={16} className="sm:w-[22px] sm:h-[22px]" />
             </div>
           </div>
 
           {/* Active Share Links Metric */}
-          <div className="p-4 rounded-2xl bg-slate-900/60 border border-slate-800 flex items-center justify-between">
-            <div>
-              <p className="text-xs text-slate-400">روابط المشاركة المحمية برمز PIN</p>
-              <h3 className="text-xl font-bold text-slate-100 mt-1">{shareLinks.length} روابط</h3>
+          <div className="p-2.5 sm:p-4 rounded-xl sm:rounded-2xl bg-slate-900/60 border border-slate-800 flex items-center justify-between">
+            <div className="min-w-0">
+              <p className="text-[10px] sm:text-xs text-slate-400 truncate">روابط PIN النشطة</p>
+              <h3 className="text-sm sm:text-xl font-bold text-slate-100 mt-0.5 sm:mt-1">{shareLinks.length} روابط</h3>
             </div>
-            <div className="p-3 rounded-xl bg-purple-500/10 text-purple-400 border border-purple-500/20">
-              <Lock size={22} />
+            <div className="p-2 sm:p-3 rounded-lg sm:rounded-xl bg-purple-500/10 text-purple-400 border border-purple-500/20 flex-shrink-0">
+              <Lock size={16} className="sm:w-[22px] sm:h-[22px]" />
             </div>
           </div>
         </div>
 
         {/* TAB 1: FILE EXPLORER UX */}
         {activeTab === 'explorer' && (
-          <div className="flex-1 flex flex-col md:flex-row gap-6 min-h-[600px]">
-            {/* Left Sidebar: Workspace Drives Switcher */}
-            <div className="w-full md:w-80 flex flex-col gap-4">
-              <div className="p-4 rounded-2xl bg-slate-900/80 border border-slate-800">
+          <div className="flex-1 flex flex-col md:flex-row gap-3 sm:gap-6 min-h-[500px]">
+            {/* Mobile Sub-Navigation Segments */}
+            <div className="md:hidden flex items-center justify-between p-1.5 bg-slate-900/90 border border-slate-800 rounded-2xl gap-1 shadow-md">
+              <button
+                type="button"
+                onClick={() => setMobileExplorerView('files')}
+                className={`flex-1 py-2 px-1.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
+                  mobileExplorerView === 'files'
+                    ? 'bg-blue-600 text-white shadow'
+                    : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                <Folder size={14} />
+                <span>الملفات</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setMobileExplorerView('vault')}
+                className={`flex-1 py-2 px-1.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all relative ${
+                  mobileExplorerView === 'vault'
+                    ? 'bg-indigo-600 text-white shadow'
+                    : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                <KeyRound size={14} />
+                <span>حسابات وملاحظات</span>
+                {activeWorkspace?.description && (
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                )}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setMobileExplorerView('clients')}
+                className={`flex-1 py-2 px-1.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
+                  mobileExplorerView === 'clients'
+                    ? 'bg-slate-800 text-white shadow'
+                    : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                <Users size={14} />
+                <span>العملاء ({workspaces.length})</span>
+              </button>
+            </div>
+
+            {/* Mobile Quick Client Bar (when on 'files' view on mobile) */}
+            {activeWorkspace && mobileExplorerView === 'files' && (
+              <div className="md:hidden flex items-center justify-between p-2.5 rounded-xl bg-slate-900/80 border border-slate-800 text-xs shadow-sm">
+                <div className="flex items-center gap-2 min-w-0">
+                  <span className="w-2 h-2 rounded-full bg-blue-400 flex-shrink-0 animate-pulse" />
+                  <span className="text-slate-400 text-[11px] flex-shrink-0">العميل:</span>
+                  <span className="font-bold text-slate-100 truncate">{activeWorkspace.clientName}</span>
+                  <span className="text-slate-500 font-mono text-[11px] flex-shrink-0">({activeWorkspace.driveLetter})</span>
+                </div>
+                <div className="flex items-center gap-1.5 flex-shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => setMobileExplorerView('vault')}
+                    className="py-1 px-2.5 text-[11px] font-semibold text-indigo-300 hover:text-white bg-indigo-950/60 border border-indigo-500/30 rounded-lg flex items-center gap-1 transition-colors"
+                  >
+                    <KeyRound size={12} />
+                    <span>الحسابات</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setMobileExplorerView('clients')}
+                    className="py-1 px-2.5 text-[11px] font-semibold text-blue-300 hover:text-white bg-blue-950/60 border border-blue-500/30 rounded-lg flex items-center gap-1 transition-colors"
+                  >
+                    <span>تبديل</span>
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Left Sidebar: Workspace Drives Switcher & Client Vault */}
+            <div className={`w-full md:w-80 flex flex-col gap-4 ${mobileExplorerView === 'files' ? 'hidden md:flex' : 'flex'}`}>
+              <div className={`p-4 rounded-2xl bg-slate-900/80 border border-slate-800 ${mobileExplorerView === 'vault' ? 'hidden md:block' : 'block'}`}>
                 <div className="flex items-center justify-between mb-3">
                   <h4 className="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
                     <HardDrive size={15} className="text-blue-400" />
@@ -612,6 +690,7 @@ export default function AdminDashboardPage() {
                           onClick={() => {
                             setActiveWorkspace(w);
                             setCurrentFolderId(null);
+                            setMobileExplorerView('files');
                           }}
                           className={`p-3 rounded-xl border transition-all cursor-pointer relative overflow-hidden ${
                             isSelected
@@ -679,7 +758,7 @@ export default function AdminDashboardPage() {
               {activeWorkspace && (() => {
                 const activeTheme = getWorkspaceColor(activeWorkspace.color);
                 return (
-                  <div className={`p-4 rounded-2xl bg-slate-900/70 border ${activeTheme.border} text-xs space-y-3`}>
+                  <div className={`p-4 rounded-2xl bg-slate-900/70 border ${activeTheme.border} text-xs space-y-3 ${mobileExplorerView === 'clients' ? 'hidden md:block' : 'block'}`}>
                     <div className="flex items-center justify-between">
                       <h5 className="font-bold text-slate-200 flex items-center gap-2">
                         <span className={`w-2 h-2 rounded-full ${activeTheme.dot}`} />
@@ -753,7 +832,7 @@ export default function AdminDashboardPage() {
             </div>
 
             {/* Right: Full Interactive File Explorer Component */}
-            <div className="flex-1 flex flex-col min-h-[550px]">
+            <div className={`flex-1 flex flex-col min-h-[500px] ${mobileExplorerView !== 'files' ? 'hidden md:flex' : 'flex'}`}>
               {activeWorkspace ? (
                 <FileExplorer
                   isAdmin={true}

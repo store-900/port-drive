@@ -26,6 +26,7 @@ import {
   Calendar,
   RefreshCw,
   MoreVertical,
+  X,
 } from 'lucide-react';
 import { formatBytes, formatDate } from '@/lib/utils';
 import { FileIcon } from './FileIcon';
@@ -131,6 +132,10 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
     name: string;
   } | null>(null);
 
+  const activeMenuFile = useMemo(() => {
+    return openMenuFileId ? files.find((f) => f.id === openMenuFileId) || null : null;
+  }, [openMenuFileId, files]);
+
   const driveColors: Record<string, string> = {
     blue: 'text-blue-400 bg-blue-500/10 border-blue-500/30',
     emerald: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30',
@@ -228,9 +233,9 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
   return (
     <div className="flex flex-col h-full bg-slate-900/90 border border-slate-800 rounded-2xl overflow-hidden shadow-2xl">
       {/* Top Address & Actions Bar */}
-      <div className="p-3 bg-slate-950/80 border-b border-slate-800 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+      <div className="p-2.5 sm:p-3 bg-slate-950/80 border-b border-slate-800 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-2 sm:gap-3">
         {/* Navigation buttons & Breadcrumbs address bar */}
-        <div className="flex items-center gap-2 flex-1 min-w-0">
+        <div className="flex items-center gap-1.5 sm:gap-2 flex-1 min-w-0">
           <div className="flex items-center gap-1 flex-shrink-0">
             <button
               onClick={handleNavigateUp}
@@ -238,28 +243,28 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
               title="الانتقال للمجلد الأعلى"
               className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 disabled:opacity-30 disabled:pointer-events-none transition-colors"
             >
-              <ArrowUp size={16} />
+              <ArrowUp size={15} />
             </button>
             <button
               onClick={onRefresh}
               title="تحديث المحتويات"
               className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
             >
-              <RotateCw size={16} />
+              <RotateCw size={15} />
             </button>
           </div>
 
           {/* Breadcrumb Trail Address Bar */}
-          <div className="flex-1 flex items-center px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-xs overflow-x-auto whitespace-nowrap scrollbar-none">
+          <div className="flex-1 flex items-center px-2.5 sm:px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-[11px] sm:text-xs overflow-x-auto whitespace-nowrap [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {/* Root Icon / Drive Indicator */}
             {isAdmin ? (
-              <span className={`flex items-center gap-1.5 font-bold flex-shrink-0 ml-1 px-2 py-0.5 rounded-lg border text-xs ${activeDriveColor}`}>
-                <HardDrive size={13} />
+              <span className={`flex items-center gap-1 sm:gap-1.5 font-bold flex-shrink-0 ml-1 px-1.5 sm:px-2 py-0.5 rounded-lg border text-[11px] sm:text-xs ${activeDriveColor}`}>
+                <HardDrive size={12} />
                 <span>القرص ({driveLetter})</span>
               </span>
             ) : (
-              <span className="flex items-center gap-1.5 font-bold text-blue-400 flex-shrink-0 ml-1">
-                <Folder size={14} />
+              <span className="flex items-center gap-1 sm:gap-1.5 font-bold text-blue-400 flex-shrink-0 ml-1 text-[11px] sm:text-xs">
+                <Folder size={13} />
                 <span>المجلد الرئيسي</span>
               </span>
             )}
@@ -275,7 +280,7 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
 
               return (
                 <React.Fragment key={idx}>
-                  <ChevronLeft size={14} className="text-slate-600 flex-shrink-0 mx-1" />
+                  <ChevronLeft size={13} className="text-slate-600 flex-shrink-0 mx-1" />
                   <button
                     onClick={() => onNavigateFolder(crumb.id)}
                     className={`font-medium transition-colors flex items-center gap-1 ${
@@ -293,24 +298,24 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
         </div>
 
         {/* Search, View Mode, and Explorer Actions */}
-        <div className="flex items-center gap-2 flex-shrink-0">
+        <div className="flex items-center justify-between md:justify-end gap-1.5 sm:gap-2 flex-wrap sm:flex-nowrap">
           {/* Quick Search */}
-          <div className="relative">
+          <div className="relative flex-1 sm:w-44 md:w-48 sm:flex-initial min-w-[110px]">
             <Search
-              size={14}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none"
+              size={13}
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none"
             />
             <input
               type="text"
               placeholder="بحث في المجلد..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-40 md:w-48 pl-3 pr-8 py-1.5 text-xs bg-slate-900 border border-slate-800 rounded-xl text-slate-100 placeholder-slate-500 focus:outline-none focus:border-blue-500"
+              className="w-full pl-2.5 pr-7 py-1.5 text-xs bg-slate-900 border border-slate-800 rounded-xl text-slate-100 placeholder-slate-500 focus:outline-none focus:border-blue-500"
             />
           </div>
 
           {/* View Mode Toggle */}
-          <div className="flex items-center p-0.5 bg-slate-900 border border-slate-800 rounded-xl">
+          <div className="flex items-center p-0.5 bg-slate-900 border border-slate-800 rounded-xl flex-shrink-0">
             <button
               onClick={() => setViewMode('grid')}
               className={`p-1.5 rounded-lg transition-colors ${
@@ -320,7 +325,7 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
               }`}
               title="عرض كأيقونات شبكية"
             >
-              <LayoutGrid size={15} />
+              <LayoutGrid size={14} />
             </button>
             <button
               onClick={() => setViewMode('list')}
@@ -331,57 +336,62 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
               }`}
               title="عرض كقائمة مفصلة"
             >
-              <List size={15} />
+              <List size={14} />
             </button>
           </div>
 
-          {/* Download Entire Folder as ZIP */}
-          {allowDownload && onDownloadZip && files.length > 0 && (
-            <button
-              onClick={onDownloadZip}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-200 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl transition-colors"
-              title="تنزيل جميع ملفات هذا المجلد كأرشيف ZIP"
-            >
-              <Archive size={14} className="text-orange-400" />
-              <span className="hidden sm:inline">تحميل كـ ZIP</span>
-            </button>
-          )}
+          {/* Actions group */}
+          <div className="flex items-center gap-1 sm:gap-1.5 flex-shrink-0">
+            {/* Download Entire Folder as ZIP */}
+            {allowDownload && onDownloadZip && files.length > 0 && (
+              <button
+                onClick={onDownloadZip}
+                className="flex items-center gap-1 px-2 sm:px-3 py-1.5 text-xs font-medium text-slate-200 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl transition-colors"
+                title="تنزيل جميع ملفات هذا المجلد كأرشيف ZIP"
+              >
+                <Archive size={14} className="text-orange-400" />
+                <span className="hidden md:inline">تحميل ZIP</span>
+              </button>
+            )}
 
-          {/* Admin Specific Actions */}
-          {isAdmin && (
-            <>
-              {onNewFolderClick && (
-                <button
-                  onClick={onNewFolderClick}
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-200 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl transition-colors"
-                >
-                  <FolderPlus size={14} className="text-amber-400" />
-                  <span className="hidden sm:inline">مجلد جديد</span>
-                </button>
-              )}
+            {/* Admin Specific Actions */}
+            {isAdmin && (
+              <>
+                {onNewFolderClick && (
+                  <button
+                    onClick={onNewFolderClick}
+                    title="مجلد جديد"
+                    className="flex items-center gap-1 px-2 sm:px-3 py-1.5 text-xs font-medium text-slate-200 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl transition-colors"
+                  >
+                    <FolderPlus size={14} className="text-amber-400" />
+                    <span className="hidden md:inline">مجلد جديد</span>
+                  </button>
+                )}
 
-              {onUploadClick && (
-                <button
-                  onClick={onUploadClick}
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-xl transition-colors shadow-sm"
-                >
-                  <Upload size={14} />
-                  <span>رفع محتويات</span>
-                </button>
-              )}
+                {onUploadClick && (
+                  <button
+                    onClick={onUploadClick}
+                    title="رفع محتويات"
+                    className="flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-xl transition-colors shadow-sm flex-shrink-0"
+                  >
+                    <Upload size={14} />
+                    <span>رفع <span className="hidden sm:inline">محتويات</span></span>
+                  </button>
+                )}
 
-              {onShareClick && (
-                <button
-                  onClick={() => onShareClick(null)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-emerald-300 bg-emerald-950/60 hover:bg-emerald-900/60 border border-emerald-600/40 rounded-xl transition-colors"
-                  title="مشاركة هذا المجلد وإنشاء رمز PIN"
-                >
-                  <Share2 size={14} />
-                  <span className="hidden sm:inline">مشاركة المجلد</span>
-                </button>
-              )}
-            </>
-          )}
+                {onShareClick && (
+                  <button
+                    onClick={() => onShareClick(null)}
+                    className="flex items-center gap-1 px-2 sm:px-3 py-1.5 text-xs font-semibold text-emerald-300 bg-emerald-950/60 hover:bg-emerald-900/60 border border-emerald-600/40 rounded-xl transition-colors flex-shrink-0"
+                    title="مشاركة هذا المجلد وإنشاء رمز PIN"
+                  >
+                    <Share2 size={14} />
+                    <span className="hidden md:inline">مشاركة المجلد</span>
+                  </button>
+                )}
+              </>
+            )}
+          </div>
         </div>
       </div>
 
@@ -490,34 +500,34 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
                   <span>الملفات ({filteredFiles.length})</span>
                 </h4>
 
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3.5">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2.5 sm:gap-3.5">
                   {filteredFiles.map((file) => (
                     <div
                       key={file.id}
                       onClick={() => onPreviewFile(file)}
-                      className="group relative p-4 rounded-2xl bg-slate-950/70 hover:bg-slate-900 border border-slate-800/80 hover:border-blue-500/50 transition-all cursor-pointer flex flex-col items-center text-center shadow-sm hover:shadow-md"
+                      className="group relative p-3 sm:p-4 rounded-2xl bg-slate-950/70 hover:bg-slate-900 border border-slate-800/80 hover:border-blue-500/50 transition-all cursor-pointer flex flex-col items-center text-center shadow-sm hover:shadow-md"
                     >
                       {/* File Icon thumbnail */}
-                      <div className="w-13 h-13 p-2.5 rounded-2xl bg-slate-900/90 border border-slate-800 flex items-center justify-center mb-2.5 group-hover:scale-105 transition-transform shadow-inner">
-                        <FileIcon extension={file.extension} mimeType={file.mimeType} size={28} />
+                      <div className="w-12 h-12 sm:w-13 sm:h-13 p-2 sm:p-2.5 rounded-2xl bg-slate-900/90 border border-slate-800 flex items-center justify-center mb-2 sm:mb-2.5 group-hover:scale-105 transition-transform shadow-inner">
+                        <FileIcon extension={file.extension} mimeType={file.mimeType} size={26} />
                       </div>
 
                       {/* File Name */}
                       <p
-                        className="text-xs font-semibold text-slate-200 group-hover:text-blue-300 w-full line-clamp-2 leading-relaxed break-all mb-1.5 min-h-[2.5rem] flex items-center justify-center text-center"
+                        className="text-xs font-semibold text-slate-200 group-hover:text-blue-300 w-full line-clamp-2 leading-snug break-words [overflow-wrap:anywhere] mb-1.5 min-h-[2.5rem] flex items-center justify-center text-center"
                         title={file.name}
                       >
                         {file.name}
                       </p>
 
                       {/* File Size */}
-                      <span className="text-[11px] text-slate-400 font-mono">
+                      <span className="text-[10px] sm:text-[11px] text-slate-400 font-mono">
                         {formatBytes(file.size)}
                       </span>
 
                       {/* 3-Dots Dropdown Menu Trigger */}
                       <div
-                        className="absolute top-2.5 left-2.5 z-20"
+                        className="absolute top-2 left-2 sm:top-2.5 sm:left-2.5 z-20"
                         onClick={(e) => e.stopPropagation()}
                       >
                         <button
@@ -536,10 +546,10 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
                           <MoreVertical size={15} />
                         </button>
 
-                        {/* Dropdown Menu Popup */}
+                        {/* Dropdown Menu Popup (Desktop Only) */}
                         {openMenuFileId === file.id && (
                           <div
-                            className="absolute top-8 left-0 z-30 min-w-[170px] bg-slate-900/98 backdrop-blur-xl border border-slate-700/90 rounded-2xl shadow-2xl py-1.5 animate-in fade-in zoom-in-95 duration-150 text-right"
+                            className="hidden sm:block absolute top-8 left-0 z-30 min-w-[170px] bg-slate-900/98 backdrop-blur-xl border border-slate-700/90 rounded-2xl shadow-2xl py-1.5 animate-in fade-in zoom-in-95 duration-150 text-right"
                             onClick={(e) => e.stopPropagation()}
                           >
                             {/* Preview */}
@@ -782,6 +792,108 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
           <span>Drive: {driveLetter}</span>
         </div>
       </div>
+
+      {/* Mobile Action Sheet (Bottom Drawer) */}
+      {activeMenuFile && (
+        <div className="fixed inset-0 z-50 sm:hidden flex flex-col justify-end">
+          {/* Dark blur backdrop */}
+          <div
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200"
+            onClick={() => setOpenMenuFileId(null)}
+          />
+          {/* Drawer panel */}
+          <div
+            className="relative z-10 w-full bg-slate-900 border-t border-slate-700/80 rounded-t-3xl p-5 shadow-2xl animate-in slide-in-from-bottom duration-200 space-y-3.5"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="w-10 h-1 bg-slate-700 rounded-full mx-auto" />
+
+            {/* File info */}
+            <div className="flex items-center gap-3 p-3 bg-slate-950/80 border border-slate-800 rounded-2xl">
+              <FileIcon extension={activeMenuFile.extension} mimeType={activeMenuFile.mimeType} size={30} />
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-bold text-slate-100 break-words line-clamp-2" title={activeMenuFile.name}>
+                  {activeMenuFile.name}
+                </p>
+                <span className="text-[11px] text-slate-400 font-mono mt-0.5 block">
+                  {formatBytes(activeMenuFile.size)}
+                </span>
+              </div>
+            </div>
+
+            {/* Action buttons */}
+            <div className="space-y-1.5 pt-1">
+              <button
+                type="button"
+                onClick={() => {
+                  setOpenMenuFileId(null);
+                  onPreviewFile(activeMenuFile);
+                }}
+                className="w-full flex items-center gap-3 p-3 text-xs font-semibold text-slate-200 hover:text-white bg-slate-800/80 hover:bg-slate-800 rounded-xl transition-colors text-right"
+              >
+                <Eye size={16} className="text-blue-400 flex-shrink-0" />
+                <span>معاينة الملف</span>
+              </button>
+
+              {allowDownload && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setOpenMenuFileId(null);
+                    onDownloadFile(activeMenuFile);
+                  }}
+                  className="w-full flex items-center gap-3 p-3 text-xs font-semibold text-slate-200 hover:text-white bg-slate-800/80 hover:bg-slate-800 rounded-xl transition-colors text-right"
+                >
+                  <Download size={16} className="text-sky-400 flex-shrink-0" />
+                  <span>تحميل الملف</span>
+                </button>
+              )}
+
+              <button
+                type="button"
+                onClick={(e) => {
+                  setOpenMenuFileId(null);
+                  handleShareWhatsApp(activeMenuFile, e);
+                }}
+                className="w-full flex items-center gap-3 p-3 text-xs font-semibold text-emerald-300 hover:text-emerald-200 bg-emerald-950/50 border border-emerald-500/30 rounded-xl transition-colors text-right"
+              >
+                {sharingFileId === activeMenuFile.id ? (
+                  <RefreshCw size={16} className="animate-spin text-emerald-400 flex-shrink-0" />
+                ) : (
+                  <WhatsAppIcon size={16} className="text-emerald-400 flex-shrink-0" />
+                )}
+                <span>إرسال عبر واتساب</span>
+              </button>
+
+              {isAdmin && onDeleteFile && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setOpenMenuFileId(null);
+                    setDeleteTarget({
+                      type: 'file',
+                      id: activeMenuFile.id,
+                      name: activeMenuFile.name,
+                    });
+                  }}
+                  className="w-full flex items-center gap-3 p-3 text-xs font-semibold text-red-400 hover:text-red-300 bg-red-950/40 border border-red-500/20 rounded-xl transition-colors text-right"
+                >
+                  <Trash2 size={16} className="text-red-400 flex-shrink-0" />
+                  <span>حذف الملف</span>
+                </button>
+              )}
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setOpenMenuFileId(null)}
+              className="w-full py-2.5 text-xs font-semibold text-slate-400 hover:text-white bg-slate-950 border border-slate-800 rounded-xl transition-colors text-center"
+            >
+              إلغاء
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Styled Confirmation Modal (No native browser popups) */}
       <ConfirmationModal

@@ -218,12 +218,13 @@ export default function ClientShareViewerPage({
               ? 'انتهت الفترة الزمنية المحددة للوصول إلى هذه المحفظة. يرجى التواصل مع المسؤول للحصول على رابط جديد.'
               : linkError || 'تعذر العثور على رابط المشاركة المطلوب، قد يكون الرابط خاطئاً أو تم حذفه.'}
           </p>
-          <a
-            href="/"
+          <button
+            type="button"
+            onClick={() => window.location.reload()}
             className="inline-flex items-center justify-center px-5 py-2.5 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-xl transition-colors shadow-md"
           >
-            العودة للرئيسية
-          </a>
+            إعادة المحاولة
+          </button>
         </div>
       </div>
     );

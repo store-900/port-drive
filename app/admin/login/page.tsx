@@ -150,16 +150,6 @@ export default function AdminLoginPage() {
             <span>جلسة دخول مشفرة عبر ملفات تعريف آمنة (HTTP-Only Cookie)</span>
           </div>
         </div>
-
-        {/* Back to Home Link */}
-        <div className="text-center mt-6">
-          <a
-            href="/"
-            className="text-xs text-slate-500 hover:text-slate-300 transition-colors"
-          >
-            ← العودة للبوابة الرئيسية
-          </a>
-        </div>
       </div>
     </div>
   );

@@ -118,6 +118,17 @@ export class S3StorageDriver implements IStorageDriver {
     return await getSignedUrl(this.s3Client, command, { expiresIn: expiresInSeconds });
   }
 
+  async getPresignedUploadUrl(key: string, mimeType = 'application/octet-stream', expiresInSeconds = 3600): Promise<string> {
+    const cleanKey = key.replace(/^[/\\]+/, '');
+    const command = new PutObjectCommand({
+      Bucket: this.bucket,
+      Key: cleanKey,
+      ContentType: mimeType,
+    });
+
+    return await getSignedUrl(this.s3Client, command, { expiresIn: expiresInSeconds });
+  }
+
   async delete(key: string): Promise<boolean> {
     try {
       const cleanKey = key.replace(/^[/\\]+/, '');

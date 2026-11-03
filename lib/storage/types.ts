@@ -24,6 +24,7 @@ export interface IStorageDriver {
   ): Promise<StorageUploadResult>;
   getDownloadStream(key: string): Promise<StorageDownloadResult>;
   getPresignedDownloadUrl?(key: string, expiresInSeconds?: number): Promise<string>;
+  getPresignedUploadUrl?(key: string, mimeType?: string, expiresInSeconds?: number): Promise<string>;
   delete(key: string): Promise<boolean>;
   deletePrefix(prefix: string): Promise<number>;
   testConnection(): Promise<{ success: boolean; message: string }>;

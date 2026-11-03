@@ -152,15 +152,109 @@ export const UploadModal: React.FC<UploadModalProps> = ({
     setSuccessCount(null);
   };
 
-  // Perform bulk upload
+  // Perform bulk upload with Direct S3 Presigned Upload (bypasses Vercel 4.5MB limit)
   const handleStartUpload = async () => {
     if (stagedFiles.length === 0) return;
 
     setIsUploading(true);
-    setUploadProgress(10);
+    setUploadProgress(5);
     setErrorMessage(null);
 
     try {
+      // 1. Request presigned upload plan
+      const planRes = await fetch('/api/upload', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'presign',
+          workspaceId,
+          targetFolderId,
+          files: stagedFiles.map((item) => ({
+            name: item.file.name,
+            relativePath: item.relativePath,
+            size: item.size,
+            mimeType: item.file.type || 'application/octet-stream',
+          })),
+        }),
+      });
+
+      if (!planRes.ok) {
+        const text = await planRes.text();
+        throw new Error(text || `فشل إعداد خطة الرفع (كود: ${planRes.status})`);
+      }
+
+      const planData = await planRes.json();
+      if (!planData.success) {
+        throw new Error(planData.error || 'فشل في إعداد خطة الرفع');
+      }
+
+      // If S3 direct presigned upload is supported:
+      if (planData.mode === 'presigned') {
+        const totalFiles = stagedFiles.length;
+        const uploadedSuccessList: any[] = [];
+
+        for (let i = 0; i < totalFiles; i++) {
+          const plan = planData.files[i];
+          const staged = stagedFiles[i];
+
+          // Direct PUT to S3 bypassing Vercel completely
+          const s3Res = await fetch(plan.uploadUrl, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': plan.mimeType || 'application/octet-stream',
+            },
+            body: staged.file,
+          });
+
+          if (!s3Res.ok) {
+            throw new Error(
+              `فشل رفع الملف "${plan.originalName}" مباشرة إلى التخزين السحابي (كود: ${s3Res.status})`
+            );
+          }
+
+          uploadedSuccessList.push({
+            name: plan.cleanFileName,
+            originalName: plan.originalName,
+            storageKey: plan.storageKey,
+            size: plan.size,
+            mimeType: plan.mimeType,
+            extension: plan.ext,
+            folderId: plan.folderId,
+          });
+
+          const currentPct = Math.round(15 + ((i + 1) / totalFiles) * 75);
+          setUploadProgress(currentPct);
+        }
+
+        // 2. Finalize and save file records in PostgreSQL
+        const completeRes = await fetch('/api/upload', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'complete',
+            workspaceId,
+            targetFolderId,
+            uploadedFiles: uploadedSuccessList,
+          }),
+        });
+
+        const completeData = await completeRes.json();
+        if (!completeData.success) {
+          throw new Error(completeData.error || 'فشل تسجيل الملفات في قاعدة البيانات');
+        }
+
+        setUploadProgress(100);
+        setSuccessCount(uploadedSuccessList.length);
+        setStagedFiles([]);
+
+        setTimeout(() => {
+          onUploadComplete();
+          onClose();
+        }, 1200);
+        return;
+      }
+
+      // Fallback: Traditional FormData upload (for local driver)
       const formData = new FormData();
       formData.append('workspaceId', workspaceId);
       if (targetFolderId) {
@@ -181,6 +275,11 @@ export const UploadModal: React.FC<UploadModalProps> = ({
 
       setUploadProgress(85);
 
+      if (!res.ok) {
+        const errText = await res.text();
+        throw new Error(errText || `فشل الرفع عبر الخادم (كود: ${res.status})`);
+      }
+
       const data = await res.json();
       if (!data.success) {
         throw new Error(data.error || 'فشل في رفع الملفات');
@@ -192,6 +291,7 @@ export const UploadModal: React.FC<UploadModalProps> = ({
 
       setTimeout(() => {
         onUploadComplete();
+        onClose();
       }, 1000);
     } catch (err: any) {
       console.error('Upload error:', err);

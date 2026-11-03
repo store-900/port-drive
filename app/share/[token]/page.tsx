@@ -305,6 +305,7 @@ export default function ClientShareViewerPage({
             onRefresh={() => loadFolderContents(currentFolderId)}
             onPreviewFile={(file) => setPreviewFile(file)}
             onDownloadFile={handleDownloadFile}
+            getDownloadUrl={getDirectDownloadUrl}
             onDownloadZip={shareInfo.allowDownload ? handleDownloadZip : undefined}
             allowDownload={shareInfo.allowDownload}
           />

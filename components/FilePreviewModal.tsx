@@ -11,9 +11,11 @@ import {
   HardDrive,
   Maximize2,
   File,
+  RefreshCw,
 } from 'lucide-react';
 import { formatBytes, formatDate, getFileCategory } from '@/lib/utils';
 import { FileIcon } from './FileIcon';
+import { WhatsAppIcon } from './FileExplorer';
 
 interface FileItem {
   id: string;
@@ -42,7 +44,57 @@ export const FilePreviewModal: React.FC<FilePreviewModalProps> = ({
 }) => {
   const [textContent, setTextContent] = useState<string | null>(null);
   const [loadingText, setLoadingText] = useState(false);
+  const [sharingWa, setSharingWa] = useState(false);
   const viewUrl = previewUrl || downloadUrl;
+
+  const handleWhatsAppShare = async () => {
+    if (!file || sharingWa) return;
+    setSharingWa(true);
+    try {
+      const fullUrl = downloadUrl.startsWith('http') ? downloadUrl : `${window.location.origin}${downloadUrl}`;
+
+      if (typeof navigator !== 'undefined' && navigator.share) {
+        try {
+          const res = await fetch(downloadUrl);
+          if (res.ok) {
+            const blob = await res.blob();
+            const shareFile = new window.File([blob], file.name, {
+              type: file.mimeType || 'application/octet-stream',
+            });
+            if (navigator.canShare && navigator.canShare({ files: [shareFile] })) {
+              await navigator.share({
+                files: [shareFile],
+                title: file.name,
+                text: `📄 ملف: ${file.name}`,
+              });
+              setSharingWa(false);
+              return;
+            }
+          }
+        } catch (err: any) {
+          if (err?.name === 'AbortError') {
+            setSharingWa(false);
+            return;
+          }
+        }
+      }
+
+      // Direct WhatsApp Web / App intent with clean data-only message
+      const message = [
+        `📄 *الملف:* ${file.name}`,
+        `📦 *الحجم:* ${formatBytes(file.size)}`,
+        `🔗 *رابط التحميل المباشر:*`,
+        fullUrl,
+      ].join('\n');
+
+      const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;
+      window.open(whatsappUrl, '_blank');
+    } catch (err) {
+      console.error('Error sharing to WhatsApp:', err);
+    } finally {
+      setSharingWa(false);
+    }
+  };
 
   useEffect(() => {
     if (!file) {
@@ -88,6 +140,21 @@ export const FilePreviewModal: React.FC<FilePreviewModalProps> = ({
           </div>
 
           <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={handleWhatsAppShare}
+              disabled={sharingWa}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 rounded-lg transition-colors shadow-sm"
+              title="إرسال إلى واتساب"
+            >
+              {sharingWa ? (
+                <RefreshCw size={14} className="animate-spin text-white" />
+              ) : (
+                <WhatsAppIcon size={14} />
+              )}
+              <span className="hidden sm:inline">إرسال واتساب</span>
+            </button>
+
             {allowDownload && (
               <a
                 href={downloadUrl}

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { X, HardDrive, Plus, Shield, Sparkles, Check } from 'lucide-react';
+import { X, HardDrive, Plus, Shield, Sparkles, Check, KeyRound } from 'lucide-react';
 
 interface NewWorkspaceModalProps {
   isOpen: boolean;
@@ -204,16 +204,23 @@ export const NewWorkspaceModal: React.FC<NewWorkspaceModalProps> = ({
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-slate-300 mb-1">
-              ملاحظات أو وصف إضافي
-            </label>
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="text-xs font-semibold text-slate-200 flex items-center gap-1.5">
+                <KeyRound size={13} className="text-indigo-400" />
+                <span>بيانات الحسابات والملاحظات (نوت باد العميل)</span>
+              </label>
+              <span className="text-[10px] text-slate-400">الصق من واتساب مباشرة</span>
+            </div>
             <textarea
-              rows={2}
+              rows={5}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="وصف مختصر للشركات أو نوع الملفات المحفوظة في هذا القرص..."
-              className="w-full px-3 py-2 text-xs bg-slate-950 border border-slate-700 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:border-blue-500 resize-none"
+              placeholder="الصق بيانات الحسابات من واتساب كما هي، مثلاً:&#10;نخبة الجمرة&#10;الرقم المميز : 3119606437&#10;كلمه المرور : Aa@123456&#10;الرقم المسجل : 0569036308&#10;رقم الهويه : 1193023585 سالم المهري&#10;الإقرارات : اقرار الربع الثالث غير مقدم"
+              className="w-full p-3 text-xs bg-slate-950 border border-slate-700/80 rounded-xl text-slate-100 placeholder-slate-600 focus:outline-none focus:border-indigo-500 font-mono leading-relaxed resize-y"
             />
+            <p className="text-[10px] text-slate-500 mt-1">
+              💡 سيتعرف النظام تلقائياً على الأرقام وكلمات المرور ويتيح نسخها بنقرة واحدة وإخفاء كلمات المرور بأمان.
+            </p>
           </div>
 
           {/* Actions */}

@@ -44,6 +44,7 @@ import { ChangeAdminProfileModal } from '@/components/ChangeAdminProfileModal';
 import { ShareLogsModal } from '@/components/ShareLogsModal';
 import { ConfirmationModal } from '@/components/ConfirmationModal';
 import { Toast } from '@/components/Toast';
+import { ClientAccountVault } from '@/components/ClientAccountVault';
 
 interface Workspace {
   id: string;
@@ -53,6 +54,7 @@ interface Workspace {
   clientPhone?: string | null;
   driveLetter: string;
   color: string;
+  description?: string | null;
   storageQuotaBytes: string;
   usedStorageBytes: string;
   _count?: {
@@ -339,6 +341,32 @@ export default function AdminDashboardPage() {
   const handleOpenShareModal = (folder: FolderItem | null) => {
     setShareTargetFolder(folder);
     setIsShareModalOpen(true);
+  };
+
+  const handleUpdateWorkspaceNotes = async (workspaceId: string, newNotes: string) => {
+    try {
+      const res = await fetch(`/api/workspaces/${workspaceId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ description: newNotes }),
+      });
+      const data = await res.json();
+      if (!data.success) {
+        throw new Error(data.error || 'فشل حفظ بيانات الحسابات');
+      }
+
+      setWorkspaces((prev) =>
+        prev.map((w) => (w.id === workspaceId ? { ...w, description: newNotes } : w))
+      );
+      if (activeWorkspace?.id === workspaceId) {
+        setActiveWorkspace((prev) => (prev ? { ...prev, description: newNotes } : null));
+      }
+
+      showToast('تم حفظ وتحديث بيانات حسابات العميل بنجاح!', 'success');
+    } catch (err: any) {
+      showToast(err.message || 'حدث خطأ أثناء حفظ البيانات', 'error');
+      throw err;
+    }
   };
 
   const copyToClipboard = (text: string, token: string, type: 'url' | 'pin') => {
@@ -685,6 +713,16 @@ export default function AdminDashboardPage() {
                       )}
                     </div>
 
+                    {/* Client Credentials & Account Vault */}
+                    <ClientAccountVault
+                      rawNotes={activeWorkspace.description}
+                      clientName={activeWorkspace.clientName}
+                      companyName={activeWorkspace.name}
+                      onSaveNotes={async (newNotes) => {
+                        await handleUpdateWorkspaceNotes(activeWorkspace.id, newNotes);
+                      }}
+                    />
+
                     {/* Action buttons: Edit Client & Delete Client */}
                     <div className="pt-2 border-t border-slate-800 flex items-center gap-2">
                       <button
@@ -733,6 +771,7 @@ export default function AdminDashboardPage() {
                   onDownloadFile={(file) => {
                     window.open(`/api/files/${file.id}`, '_blank');
                   }}
+                  getDownloadUrl={(file) => `/api/files/${file.id}`}
                   onUploadClick={() => setIsUploadModalOpen(true)}
                   onNewFolderClick={() => setIsNewFolderModalOpen(true)}
                   onShareClick={(folder) => handleOpenShareModal(folder)}
